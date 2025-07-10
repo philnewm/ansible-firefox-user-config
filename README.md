@@ -4,39 +4,39 @@
 
 Role description
 
-This role includes a vagrant based molecule testing setup as a submodule at `molecule/default`
+This role includes a vagrant based molecule testing setup as a submodule at `molecule`
 
 ## Structure
 
 ```code
 📦 ansible-firefox-user-config
- ┣ 📂 defaults
- ┃ ┗ 📜 main.yml
- ┣ 📂 files
- ┃ ┗ 📜 file_placeholder.yml
- ┣ 📂 handlers
- ┃ ┗ 📜 main.yml
- ┣ 📂 meta
- ┃ ┗ 📜 main.yml
+ ┣ 📂defaults
+ ┃ ┗ 📜main.yml
+ ┣ 📂meta
+ ┃ ┗ 📜main.yml
  ┣ 📂 molecule
  ┃ ┗ 📂 default
  ┃   ┗ 📜, 📜, 📜, scenario_files
- ┣ 📂 tasks
- ┃ ┣ 📜 main.yml
- ┃ ┣ 📜 present.yml
- ┃ ┣ 📜 dependencies.yml
- ┃ ┣ 📜 absent.yml
- ┃ ┗ 📜 init.yml
- ┣ 📂 templates
- ┃ ┗ ⛩️ template.j2
- ┣ 📂 vars
- ┃ ┗ 📜 main.yml
- ┗ 🗒️ README.md
- ┗ 📓 requirements.txt
+ ┣ 📂tasks
+ ┃ ┣ 📜absent.yml
+ ┃ ┣ 📜extensions.yml
+ ┃ ┣ 📜favorite.yml
+ ┃ ┣ 📜main.yml
+ ┃ ┣ 📜present.yml
+ ┃ ┣ 📜profile.yml
+ ┃ ┗ 📜tests.yml
+ ┣ 📂templates
+ ┃ ┣ 📜installs.ini.j2
+ ┃ ┣ 📜profiles.ini.j2
+ ┃ ┗ 📜user.js.j2
+ ┣ 📜.gitignore
+ ┣ 📜.gitmodules
+ ┣ 📜README.md
+ ┗ 📜requirements.yml
 
 ```
 
-Describe and explain role structure. 
+Describe and explain role structure.
 
 ## Requirements
 
@@ -55,7 +55,9 @@ Elaborate external dependencies and how to use them.
 
 ## Dependencies
 
-List role ansible-galaxy dependencies - if any.
+List role ansible-galaxy dependencies
+
+* philnewm.firefox
 
 ## Example Playbook
 
@@ -70,6 +72,10 @@ tasks:
       name: ansible-firefox-user-config
     vars:
       state: present
+      firefox_source: default
+      firefox_flatpak_extensions: true
+      firefox_gnome_favorite: true
+      user: "{{ username }}"
 
 ...
 ```
