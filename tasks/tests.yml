@@ -1,5 +1,95 @@
 ---
 
-# tests to verify role functionality
+- name: Stat profile directory
+  become: true
+  become_user: "{{ user }}"
+  ansible.builtin.stat:
+    path: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}"
+  register: profile_dir_stat
+
+- name: Test that the profile directory exists
+  ansible.builtin.assert:
+    that:
+      - profile_dir_stat.stat.exists
+      - profile_dir_stat.stat.isdir
+    fail_msg: "The firefox profile directory was not found at '{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}'."
+    quiet: true
+
+- name: Test start Firefox to generate settings
+  become: true
+  become_user: "{{ user }}"
+  ansible.builtin.command:
+    cmd: "timeout 3 {{ firefox_command[firefox_source][ansible_os_family] }} --headless about:blank &"
+  args:
+    creates: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/prefs.js"
+  register: firefox_result
+  failed_when: firefox_result.rc not in [0, 124]
+
+- name: Get firefox settings
+  become: true
+  become_user: "{{ user }}"
+  loop: "{{ user_config.keys() }}"
+  loop_control:
+    loop_var: pref_key
+  ansible.builtin.command:
+    cmd: "grep '^user_pref(\"{{ pref_key }}\",' {{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/prefs.js"
+  register: prefs_list
+  changed_when: false
+  failed_when: prefs_list.rc != 0
+
+- name: Create dictionary of fetched preferences
+  loop: "{{ prefs_list.results }}"
+  loop_control:
+    label: "{{ item.pref_key }}"
+  ansible.builtin.set_fact:
+    fetched_prefs: "{{ fetched_prefs | default({}) | combine({ item.pref_key: (item.stdout | regex_search(',\\s*(.+)\\);', '\\1') | first | from_json) }) }}"
+
+- name: Test firefox settings
+  loop: "{{ fetched_prefs.keys() }}"
+  loop_control:
+    loop_var: key
+  ansible.builtin.assert:
+    that:
+      - user_config[key] == fetched_prefs[key]
+    fail_msg: |
+      "Expected value '{{ user_config[key] }}'
+      but got '{{ fetched_prefs[key] }}' instead for key '{{ key }}'."
+    quiet: true
+
+- name: Test extensions in case of flatpak
+  when: firefox_source == "flatpak"
+  block:
+    - name: List firefox extensions
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.slurp:
+        src: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/extensions.json"
+      register: extensions_file_content
+
+    # TODO install into venv
+    - name: Install json filter dependency
+      ansible.builtin.pip:
+        name: jmespath
+      delegate_to: localhost
+
+    - name: Decode JSON and filter enabled extensions
+      ansible.builtin.set_fact:
+        enabled_extensions: "{{ (extensions_file_content.content | b64decode | from_json) | json_query('addons[?active==`true`].defaultLocale.name') }}"
+
+    - name: Display enabled Firefox extensions
+      ansible.builtin.debug:
+        var: enabled_extensions
+
+    - name: Test enabled extensions
+      loop: "{{ firefox_extensions }}"
+      loop_control:
+        loop_var: extension
+        label: "{{ extension.name }}"
+      ansible.builtin.assert:
+        that:
+          - extension.id in enabled_extensions
+        fail_msg: |
+          "Extension '{{ extension.name }}' doesn't seem to be enabled."
+        quiet: true
 
 ...

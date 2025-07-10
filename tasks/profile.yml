@@ -1,0 +1,68 @@
+---
+
+- name: Ensure Firefox runs once to create installs.ini
+  become: true
+  become_user: "{{ user }}"
+  ansible.builtin.command:
+    cmd: "timeout 3 {{ firefox_command[firefox_source][ansible_os_family] }} --headless about:blank &"
+  args:
+    creates: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/installs.ini"
+  register: firefox_result
+  failed_when: firefox_result.rc not in [0, 124]
+
+- name: Find all profile directories
+  become: true
+  become_user: "{{ user }}"
+  ansible.builtin.find:
+    paths: "{{ firefox_config_path[firefox_source][ansible_os_family] }}"
+    file_type: directory
+    recurse: false
+  register: firefox_profile_dirs
+
+- name: Build initial profile setup
+  when: firefox_profile_name not in firefox_profile_dirs.files | map(attribute='path') | map('basename') | list
+  block:
+    - name: Read installs.ini
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.command:
+        cmd: "cat {{ firefox_config_path[firefox_source][ansible_os_family] }}/installs.ini"
+      register: ini_file
+      changed_when: false
+
+    - name: Extract install ID from first line
+      ansible.builtin.set_fact:
+        firefox_install_id: "{{ ini_file.stdout_lines[0] | trim('[]') }}"
+
+    - name: Remove default profile setup
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.file:
+        path: "{{ firefox_config_path[firefox_source][ansible_os_family] }}"
+        state: absent
+
+    - name: Ensure profile directory exists
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.file:
+        path: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}"
+        state: directory
+        mode: "0700"
+
+    - name: Set up installs
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.template:
+        src: installs.ini.j2
+        dest: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/installs.ini"
+        mode: "0644"
+
+    - name: Set up profiles
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.template:
+        src: profiles.ini.j2
+        dest: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/profiles.ini"
+        mode: "0644"
+
+...

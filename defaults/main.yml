@@ -1,7 +1,94 @@
 ---
 
-# Variables for ansible-role-template
-
 state: present
+firefox_source: default
+firefox_flatpak_extensions: true
+firefox_gnome_favorite: true
+user: "vagrant"
+
+firefox_command:
+  default:
+    "RedHat": "firefox"
+    "Debian": "firefox"
+  esr:
+    "RedHat": "firefox"
+    "Debian": "firefox-esr"
+  flatpak:
+    "RedHat": "flatpak run org.mozilla.firefox"
+    "Debian": "flatpak run org.mozilla.firefox"
+
+firefox_launcher:
+  default:
+    "RedHat": "firefox.desktop"
+    "Debian": "firefox.desktop"
+  esr:
+    "RedHat": "firefox.desktop"
+    "Debian": "firefox-esr.desktop"
+  flatpak:
+    "RedHat": org.mozilla.firefox.desktop
+    "Debian": org.mozilla.firefox.desktop
+
+mozilla_user_dir: /home/{{ user }}/.mozilla
+flatpak_mozilla_user_dir: /home/{{ user }}/.var/app/org.mozilla.firefox/.mozilla
+
+firefox_config_path:
+  default:
+    RedHat: "{{ mozilla_user_dir }}/firefox"
+    Debian: "{{ mozilla_user_dir }}/firefox"
+  esr:
+    RedHat: "{{ mozilla_user_dir }}/firefox"
+    Debian: "{{ mozilla_user_dir }}/firefox-esr"
+  flatpak:
+    RedHat: "{{ flatpak_mozilla_user_dir }}/firefox"
+    Debian: "{{ flatpak_mozilla_user_dir }}/firefox"
+
+firefox_profile_name: default_profile_by_ansible
+firefox_profile_id: 0
+firefox_profile_default: 1
+firefox_profile_version: 2
+
+profile_config:
+  "Name": "{{ profile_path | basename | split('.') | last }}"
+  "Path": "{{ profile_path | basename }}"
+  "Default": 1
+
+# INFO flatpak changes some of the values
+user_config:
+  "general.autoScroll": true
+  "layout.css.prefers-color-scheme.content-override": 0
+  "browser.startup.homepage": "https://duckduckgo.com/"
+  "browser.newtabpage.activity-stream.showSponsoredTopSites": false
+  "privacy.history.custom": true
+  "places.history.enabled": false
+  "browser.formfill.enable": false
+  # TODO fix this key
+  # "privacy.sanitize.pending": "[{\"id\":\"shutdown\",\"itemsToClear\":[\"cache\",\"historyFormDataAndDownloads\",\"cookiesAndStorage\"],\"options\":{}},{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}},{\"id\":0,\"itemsToClear\":[\"cache\",\"historyFormDataAndDownloads\",\"cookiesAndStorage\"],\"options\":{\"progress\":{\"clearHonoringExceptions\":true}}}]]"  # "[{\"id\":\"shutdown\",\"itemsToClear\":[\"cache\",\"historyFormDataAndDownloads\",\"cookiesAndStorage\"],\"options\":{}},{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}}]"
+  "privacy.sanitize.sanitizeOnShutdown": true
+  "signon.rememberSignons": false
+  "privacy.clearOnShutdown.offlineApps": true
+  "browser.backspace_action": 0
+  # "extensions.activeThemeID": "{ad213ecb-ae95-4ac8-ac7a-5925ba36ea1d}"
+
+firefox_extensions:
+  - id: "duckduckgo"
+    name: "DuckDuckGo Privacy Essentials"
+  - id: "darkreader"
+    name: "Dark Reader"
+  - id: "bitwarden-password-manager"
+    name: "Bitwarden Password Manager"
+  - id: "ublock-origin"
+    name: "uBlock Origin"
+  - id: "languagetool"
+    name: "AI Grammar Checker & Paraphraser - LanguageTool"
+  - id: "enhancer-for-youtube"
+    name: "Enhancer for YouTube™"
+  - id: "behind_the_overlay"
+    name: "Behind The Overlay"
+  - id: "dictionary-anyvhere"
+    name: "Dictionary Anywhere"
+  - id: "gnome-shell-integration"
+    name: "GNOME Shell integration"
+  - id: "matte-black-violet"
+    name: "Matte Black (Violet)"
 
 ...

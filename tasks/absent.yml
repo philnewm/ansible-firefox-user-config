@@ -1,7 +1,8 @@
 ---
 
-# Uninstall and cleanup tasks
-
+- name: Comment on no tasks
+  ansible.builtin.debug:
+    msg: "Since this role only applies settings and doesn't install packages - there's no absent logic to handle"
 
 - name: Remove unused dependencies
   become: true

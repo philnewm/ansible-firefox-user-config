@@ -1,0 +1,13 @@
+[Profile{{ firefox_profile_id }}]
+Name={{ firefox_profile_name }}
+IsRelative=1
+Path={{ firefox_profile_name }}
+Default={{ firefox_profile_default }}
+
+[General]
+StartWithLastProfile=1
+Version={{ firefox_profile_version }}
+
+[Install{{ firefox_install_id }}]
+Default={{ firefox_profile_name }}
+Locked=1

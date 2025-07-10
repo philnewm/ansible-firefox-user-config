@@ -1,0 +1,5 @@
+// user.js initialized by ansible
+//
+{% for key, value in user_config.items() %}
+user_pref("{{ key }}", {{ value | to_json }});
+{% endfor %}

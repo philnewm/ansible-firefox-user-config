@@ -1,11 +1,37 @@
 ---
 
-# Install tasks
-# INFO larger roles should only use **include_tasks** here
+- name: Check for supported install source
+  when: firefox_source not in ["default", "esr", "flatpak"]
+  ansible.builtin.fail:
+    msg: "Please change {{ firefox_source }} to one of the supported ones: default, esr or flatpak"
 
-
-# INFO This task may be obsolete for your use-case
 - name: Gather package facts
   ansible.builtin.package_facts:
+
+- name: Add firefox default profile
+  ansible.builtin.include_tasks:
+    file: profile.yml
+
+- name: Template user.js to host
+  become: true
+  become_user: "{{ user }}"
+  ansible.builtin.template:
+    src: "user.js.j2"
+    dest: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/user.js"
+    mode: "0644"
+
+- name: Add firefox to gnome favorites
+  when: "'gnome-shell' in ansible_facts.packages and firefox_gnome_favorite"
+  ansible.builtin.include_tasks:
+    file: favorite.yml
+
+- name: Set per user extensions for flatpak install
+  loop: "{{ firefox_extensions }}"
+  loop_control:
+    loop_var: extension
+    label: "{{ extension.name }}"
+  when: firefox_source == "flatpak"
+  ansible.builtin.include_tasks:
+    file: extensions.yml
 
 ...

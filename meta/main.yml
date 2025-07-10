@@ -1,10 +1,10 @@
 ---
 
 galaxy_info:
-  role_name: firefox-user-config
-  author: author_name
-  description: ansible-role-template description
-  license: some_license
+  role_name: firefox_user_config
+  author: philnewm
+  description: Automatically configure firefox for a user.
+  license: MIT
   min_ansible_version: "2.1"
   platforms:
     - name: EL
@@ -17,4 +17,4 @@ galaxy_info:
       versions:
         - "jammy"
   galaxy_tags: []
-dependencies: []
+dependencies: [philnewm.firefox]
