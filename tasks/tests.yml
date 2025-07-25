@@ -15,20 +15,34 @@
     fail_msg: "The firefox profile directory was not found at '{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}'."
     quiet: true
 
-- name: Test start Firefox to generate settings
+- name: Start Firefox to trigger full extension manager load
   become: true
   become_user: "{{ user }}"
   ansible.builtin.command:
-    cmd: "timeout 3 {{ firefox_command[firefox_source][ansible_os_family] }} --headless about:blank &"
+    cmd: >
+      timeout 5 {{ firefox_command[firefox_source][ansible_os_family] }}
+      --headless -no-remote -new-instance https://example.com
   args:
-    creates: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/prefs.js"
-  register: firefox_result
-  failed_when: firefox_result.rc not in [0, 124]
+    creates: "{{ firefox_config_path[firefox_source] }}"
+  register: headless_start
+  failed_when: headless_start.rc not in [0, 124]
+
+- name: Get Firefox major version
+  become: true
+  become_user: "{{ user }}"
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      firefox --version | grep -oP '\d+' | head -1
+  args:
+    executable: /bin/bash
+  register: firefox_major_version
+  changed_when: false
 
 - name: Get firefox settings
   become: true
   become_user: "{{ user }}"
-  loop: "{{ user_config.keys() }}"
+  loop: "{{ user_config[firefox_major_version.stdout].keys() }}"
   loop_control:
     loop_var: pref_key
   ansible.builtin.command:
@@ -50,11 +64,59 @@
     loop_var: key
   ansible.builtin.assert:
     that:
-      - user_config[key] == fetched_prefs[key]
+      - user_config[firefox_major_version.stdout][key] == fetched_prefs[key]
     fail_msg: |
-      "Expected value '{{ user_config[key] }}'
+      "Expected value '{{ user_config[firefox_major_version.stdout][key] }}'
       but got '{{ fetched_prefs[key] }}' instead for key '{{ key }}'."
     quiet: true
+
+- name: Test extensions in case of no flatpak
+  when: firefox_source != "flatpak"
+  block:
+    - name: Read installed extensions
+      ansible.builtin.slurp:
+        src: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/extensions.json"
+      register: extensions_json_raw
+
+    - name: Parse extensions.json
+      ansible.builtin.set_fact:
+        enabled_extension_ids: >-
+          {{
+            (extensions_json_raw.content | b64decode | from_json).addons
+            | selectattr('active', 'equalto', true)
+            | map(attribute='id')
+            | reject('search', 'langpack')
+            | list
+          }}
+
+    - name: Get enabled extensions
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.command:
+        cmd: "grep 'user_pref(\"extensions.webextensions.uuids\",' {{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/prefs.js"
+      register: extension_dict
+      changed_when: false
+      failed_when: extension_dict.rc != 0
+
+    - name: Parse enabled extensions
+      ansible.builtin.set_fact:
+        present_enabled_extensions: >-
+          {{
+            extension_dict.stdout[
+              extension_dict.stdout.find('{') : extension_dict.stdout.rfind('}') + 1
+            ]
+            | regex_replace('\\"', '"')
+            | from_json
+          }}
+
+    - name: Test firefox enabled extensions
+      loop: "{{ enabled_extension_ids }}"
+      ansible.builtin.assert:
+        that:
+          - item in present_enabled_extensions.keys()
+        fail_msg: |
+          "Unable to find extension '{{ item }}' in enabled extensions."
+        quiet: true
 
 - name: Test extensions in case of flatpak
   when: firefox_source == "flatpak"

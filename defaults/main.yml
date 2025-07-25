@@ -52,22 +52,52 @@ profile_config:
   "Path": "{{ profile_path | basename }}"
   "Default": 1
 
-# INFO flatpak changes some of the values
+# INFO flatpak changes some of these values
 user_config:
-  "general.autoScroll": true
-  "layout.css.prefers-color-scheme.content-override": 0
-  "browser.startup.homepage": "https://duckduckgo.com/"
-  "browser.newtabpage.activity-stream.showSponsoredTopSites": false
-  "privacy.history.custom": true
-  "places.history.enabled": false
-  "browser.formfill.enable": false
-  # TODO fix this key
-  # "privacy.sanitize.pending": "[{\"id\":\"shutdown\",\"itemsToClear\":[\"cache\",\"historyFormDataAndDownloads\",\"cookiesAndStorage\"],\"options\":{}},{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}},{\"id\":0,\"itemsToClear\":[\"cache\",\"historyFormDataAndDownloads\",\"cookiesAndStorage\"],\"options\":{\"progress\":{\"clearHonoringExceptions\":true}}}]]"  # "[{\"id\":\"shutdown\",\"itemsToClear\":[\"cache\",\"historyFormDataAndDownloads\",\"cookiesAndStorage\"],\"options\":{}},{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}}]"
-  "privacy.sanitize.sanitizeOnShutdown": true
-  "signon.rememberSignons": false
-  "privacy.clearOnShutdown.offlineApps": true
-  "browser.backspace_action": 0
-  # "extensions.activeThemeID": "{ad213ecb-ae95-4ac8-ac7a-5925ba36ea1d}"
+  "config_default": &config_default
+    "general.autoScroll": true
+    "layout.css.prefers-color-scheme.content-override": 0
+    "browser.startup.homepage": "https://duckduckgo.com/"
+    "browser.newtabpage.activity-stream.showSponsoredTopSites": false
+    "places.history.enabled": false
+    "browser.formfill.enable": false
+    "privacy.clearHistory.siteSettings": true
+    "privacy.clearOnShutdown.offlineApps": true
+    "privacy.clearOnShutdown_v2.siteSettings": true
+    "privacy.donottrackheader.enabled": true
+    "privacy.globalprivacycontrol.enabled": true
+    "privacy.globalprivacycontrol.was_ever_enabled": true
+    "privacy.history.custom": true
+    "privacy.sanitize.clearOnShutdown.hasMigratedToNewPrefs2": true
+    "privacy.sanitize.cpd.hasMigratedToNewPrefs2": true
+    "privacy.sanitize.sanitizeOnShutdown": true
+    "privacy.userContext.enabled": true
+    "signon.rememberSignons": false
+    "browser.backspace_action": 0
+  "128":
+    <<: *config_default
+    # "privacy.sanitize.pending": "[{\"id\":\"shutdown\",\"itemsToClear\":[\"browsingHistoryAndDownloads\",\"formdata\",\"sessions\"],\"options\":{}}]"
+    # Warning always changes to this output on second run
+    "privacy.sanitize.pending": "[{\"id\":\"shutdown\",\"itemsToClear\":[\"cache\",\"siteSettings\",\"historyFormDataAndDownloads\",\"cookiesAndStorage\"],\"options\":{}},{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}}]"
+  "141":
+    <<: *config_default
+    # INFO auto theme enabling wont work with firefox-esr version due to conservative behavior in terms of customizations
+    "extensions.activeThemeID": "{ad213ecb-ae95-4ac8-ac7a-5925ba36ea1d}"
+    "privacy.sanitize.pending": "[{\"id\":\"shutdown\",\"itemsToClear\":[\"cache\",\"siteSettings\",\"browsingHistoryAndDownloads\",\"cookiesAndStorage\"],\"options\":{}},{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}}]"
+
+enable_extensions:
+  "adguardadblocker@adguard.com": "7a1d72e1-5f6c-4067-b4b8-019e68374afd"
+  "languagetool-webextension@languagetool.org": "9739cbcd-a131-411a-8536-ae9fb1d20269"
+  "jid1-Y3WfE7td45aWDw@jetpack": "cf53bfc4-81d8-4e43-83bc-ed70853576be"
+  "{446900e4-71c2-419f-a6a7-df9c091e268b}": "58f491a2-fe70-4ffc-8c8d-056f49c6f9e6"
+  "addon@darkreader.org": "beefa401-adb8-433a-b7a0-3a6690f7f88c"
+  "{e90f5de4-8510-4515-9f67-3b6654e1e8c2}": "ee234cc9-a92d-4c00-8a3e-b307239b4ff2"
+  "jid1-ZAdIEUB7XOzOJw@jetpack": "315fbb86-7ef0-45ff-aaca-c52837669205"
+  "enhancerforyoutube@maximerf.addons.mozilla.org": "40586c00-507b-4a64-8668-e68cf8b8256b"
+  "chrome-gnome-shell@gnome.org": "26996ace-613b-469b-b795-deade3024a1f"
+  "jid1-KKzOGWgsW3Ao4Q@jetpack": "fb26a341-cd8c-4a1a-9f8c-d53d407cbc33"
+  "{ad213ecb-ae95-4ac8-ac7a-5925ba36ea1d}": "193d6c31-1880-4a17-90f5-ff7e340f0d21"
+  "firefox@tampermonkey.net": "bbb13ed3-bcaa-4a5e-b07e-a844666c6066"
 
 firefox_extensions:
   - id: "duckduckgo"
@@ -76,8 +106,8 @@ firefox_extensions:
     name: "Dark Reader"
   - id: "bitwarden-password-manager"
     name: "Bitwarden Password Manager"
-  - id: "ublock-origin"
-    name: "uBlock Origin"
+  - id: "adguard-adblocker"
+    name: "AdGuard AdBlocker"
   - id: "languagetool"
     name: "AI Grammar Checker & Paraphraser - LanguageTool"
   - id: "enhancer-for-youtube"
@@ -90,5 +120,13 @@ firefox_extensions:
     name: "GNOME Shell integration"
   - id: "matte-black-violet"
     name: "Matte Black (Violet)"
+
+firefox_system_ext_dir:
+  default:
+    RedHat: "/usr/lib64/firefox/browser/extensions"
+    Debian: "/usr/lib/firefox/distribution/extensions/"
+  esr:
+    RedHat: "/usr/lib64/firefox/browser/extensions"
+    Debian:  "/usr/lib/firefox-esr/browser/extensions"
 
 ...

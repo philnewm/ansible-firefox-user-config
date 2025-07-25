@@ -1,5 +1,6 @@
 // user.js initialized by ansible
 //
-{% for key, value in user_config.items() %}
+{% for key, value in user_config[firefox_major_version.stdout].items() %}
 user_pref("{{ key }}", {{ value | to_json }});
 {% endfor %}
+user_pref("extensions.webextensions.uuids", "{{ enable_extensions | to_json | replace('"', '\\"') }}");

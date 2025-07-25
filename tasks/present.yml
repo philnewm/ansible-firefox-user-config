@@ -12,6 +12,18 @@
   ansible.builtin.include_tasks:
     file: profile.yml
 
+- name: Get Firefox major version
+  become: true
+  become_user: "{{ user }}"
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      firefox --version | grep -oP '\d+' | head -1
+  args:
+    executable: /bin/bash
+  register: firefox_major_version
+  changed_when: false
+
 - name: Template user.js to host
   become: true
   become_user: "{{ user }}"
