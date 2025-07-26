@@ -14,19 +14,22 @@
   ansible.builtin.set_fact:
     gnome_favorites: "{{ current_favorites.value | from_yaml | default([], true) }}"
 
-- name: Assign firefox launcher name
-  become: true
-  become_user: "{{ user }}"
-  ansible.builtin.set_fact:
-    firefox_launcher: ["{{ firefox_launcher[firefox_source][ansible_os_family] }}"]
+- name: Add to favorites if not present
+  when: firefox_launcher[firefox_source][ansible_os_family] not in gnome_favorites
+  block:
+    - name: Assign firefox launcher name
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.set_fact:
+        firefox_desktop_launcher: "{{ firefox_launcher[firefox_source][ansible_os_family] }}"
 
-- name: Add firefox to favorites
-  become: true
-  become_user: "{{ user }}"
-  when: firefox_launcher[0] not in gnome_favorites
-  community.general.dconf:
-    key: /org/gnome/shell/favorite-apps
-    value: "{{ gnome_favorites + firefox_launcher }}"
-    state: present
+    - name: Add firefox to favorites
+      become: true
+      become_user: "{{ user }}"
+      when: firefox_desktop_launcher not in gnome_favorites
+      community.general.dconf:
+        key: /org/gnome/shell/favorite-apps
+        value: "{{ gnome_favorites + [firefox_desktop_launcher] }}"
+        state: present
 
 ...
