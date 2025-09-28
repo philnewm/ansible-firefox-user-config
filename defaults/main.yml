@@ -79,6 +79,8 @@ user_config:
     # "privacy.sanitize.pending": "[{\"id\":\"shutdown\",\"itemsToClear\":[\"browsingHistoryAndDownloads\",\"formdata\",\"sessions\"],\"options\":{}}]"
     # Warning setting seems to change inconsistently
     # "privacy.sanitize.pending": "[{\"id\":\"shutdown\",\"itemsToClear\":[\"cache\",\"siteSettings\",\"historyFormDataAndDownloads\",\"cookiesAndStorage\"],\"options\":{}},{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}}]"
+  "140":
+    <<: *config_default
   "141":
     <<: *config_default
     # INFO auto theme enabling wont work with firefox-esr version due to conservative behavior in terms of customizations
