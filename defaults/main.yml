@@ -86,6 +86,10 @@ user_config:
     # INFO auto theme enabling wont work with firefox-esr version due to conservative behavior in terms of customizations
     "extensions.activeThemeID": "{ad213ecb-ae95-4ac8-ac7a-5925ba36ea1d}"
     # "privacy.sanitize.pending": "[{\"id\":\"shutdown\",\"itemsToClear\":[\"cache\",\"siteSettings\",\"browsingHistoryAndDownloads\",\"cookiesAndStorage\"],\"options\":{}},{\"id\":\"newtab-container\",\"itemsToClear\":[],\"options\":{}}]"
+  "143":
+    <<: *config_default
+    "extensions.activeThemeID": "{ad213ecb-ae95-4ac8-ac7a-5925ba36ea1d}"
+
 
 enable_extensions:
   "adguardadblocker@adguard.com": "7a1d72e1-5f6c-4067-b4b8-019e68374afd"
