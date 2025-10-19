@@ -16,17 +16,6 @@ firefox_command:
     "RedHat": "flatpak run org.mozilla.firefox"
     "Debian": "flatpak run org.mozilla.firefox"
 
-firefox_launcher:
-  default:
-    "RedHat": "firefox.desktop"
-    "Debian": "firefox.desktop"
-  esr:
-    "RedHat": "firefox.desktop"
-    "Debian": "firefox-esr.desktop"
-  flatpak:
-    "RedHat": org.mozilla.firefox.desktop
-    "Debian": org.mozilla.firefox.desktop
-
 mozilla_user_dir: /home/{{ user }}/.mozilla
 flatpak_mozilla_user_dir: /home/{{ user }}/.var/app/org.mozilla.firefox/.mozilla
 
