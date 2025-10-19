@@ -32,11 +32,6 @@
     dest: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/user.js"
     mode: "0644"
 
-- name: Add firefox to gnome favorites
-  when: "'gnome-shell' in ansible_facts.packages and firefox_gnome_favorite"
-  ansible.builtin.include_tasks:
-    file: favorite.yml
-
 - name: Set per user extensions for flatpak install
   loop: "{{ firefox_extensions }}"
   loop_control:

@@ -74,7 +74,6 @@ tasks:
       state: present
       firefox_source: default
       firefox_flatpak_extensions: true
-      firefox_gnome_favorite: true
       user: "{{ username }}"
 
 ...
