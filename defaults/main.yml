@@ -77,6 +77,9 @@ user_config:
   "143":
     <<: *config_default
     "extensions.activeThemeID": "{ad213ecb-ae95-4ac8-ac7a-5925ba36ea1d}"
+  "144":
+    <<: *config_default
+    "extensions.activeThemeID": "{ad213ecb-ae95-4ac8-ac7a-5925ba36ea1d}"
 
 
 enable_extensions:
