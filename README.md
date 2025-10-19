@@ -20,7 +20,6 @@ This role includes a vagrant based molecule testing setup as a submodule at `mol
  ┣ 📂tasks
  ┃ ┣ 📜absent.yml
  ┃ ┣ 📜extensions.yml
- ┃ ┣ 📜favorite.yml
  ┃ ┣ 📜main.yml
  ┃ ┣ 📜present.yml
  ┃ ┣ 📜profile.yml
@@ -45,19 +44,16 @@ Elaborate external dependencies and how to use them.
 ## Role Variables
 
 * defaults/main.yml
-  * first_var
-  * sec_var
-  * third_var
-* vars/main.yml
-  * first_var
-  * sec_var
-  * third_var
+  * `state` - Set to '*present*' since this role got no '*absent*' implementation
+  * `firefox_source` - Install source (*default*, *esr* or *flatpak*), default is '*default*'
+  * `firefox_flatpak_extensions` - Install flatpak based firefox extensions
+  * `user` - Username to apply this config to
 
 ## Dependencies
 
 List role ansible-galaxy dependencies
 
-* philnewm.firefox
+* [philnewm.firefox](https://galaxy.ansible.com/ui/standalone/roles/philnewm/firefox/)
 
 ## Example Playbook
 
@@ -74,7 +70,7 @@ tasks:
       state: present
       firefox_source: default
       firefox_flatpak_extensions: true
-      user: "{{ username }}"
+      user: "test_user"
 
 ...
 ```
@@ -82,18 +78,3 @@ tasks:
 ## License
 
 Add license - if any.
-
-## Notes
-
-Includes special git configuration for submodule files that are most likely to get local overrides
-`.git/info/attributes`
-
-```code
-molecule/default/cleanup.yml merge=ours
-molecule/default/converge.yml merge=ours
-molecule/default/verify.yml merge=ours
-```
-
-## Changes to role template
-
-* Add github action that flags empty directories on release creation
