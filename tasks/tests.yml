@@ -42,7 +42,7 @@
 - name: Get firefox settings
   become: true
   become_user: "{{ user }}"
-  loop: "{{ user_config[firefox_major_version.stdout].keys() }}"
+  loop: "{{ firefox_user_config[firefox_major_version.stdout].keys() | default(firefox_user_config[firefox_user_config_fallback_version].keys()) }}"
   loop_control:
     loop_var: pref_key
   ansible.builtin.command:
@@ -64,9 +64,9 @@
     loop_var: key
   ansible.builtin.assert:
     that:
-      - user_config[firefox_major_version.stdout][key] == fetched_prefs[key]
+      - firefox_user_config[firefox_major_version.stdout][key] == fetched_prefs[key]
     fail_msg: |
-      "Expected value '{{ user_config[firefox_major_version.stdout][key] }}'
+      "Expected value '{{ firefox_user_config[firefox_major_version.stdout][key] }}'
       but got '{{ fetched_prefs[key] }}' instead for key '{{ key }}'."
     quiet: true
 
