@@ -15,6 +15,12 @@
     fail_msg: "The firefox profile directory was not found at '{{ firefox_config_path[firefox_source][ansible_facts.os_family] }}/{{ firefox_profile_name }}'."
     quiet: true
 
+- name: Ensure `dbus-launch` command is available
+  become: true
+  ansible.builtin.package:
+    name: dbus-x11
+    state: present
+
 - name: Start Firefox to trigger full extension manager load
   become: true
   become_user: "{{ user }}"
