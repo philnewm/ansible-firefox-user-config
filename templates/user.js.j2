@@ -1,6 +1,10 @@
 // user.js initialized by ansible
 //
-{% for key, value in firefox_user_config[firefox_major_version.stdout].items() | default(firefox_user_config[firefox_user_config_fallback_version].items()) %}
+{% for key, value in
+  (firefox_user_config.get(
+      firefox_major_version.stdout,
+      firefox_user_config[firefox_user_config_fallback_version]
+  )).items()%}
 user_pref("{{ key }}", {{ value | to_json }});
 {% endfor %}
 user_pref("extensions.webextensions.uuids", "{{ enable_extensions | to_json | replace('"', '\\"') }}");

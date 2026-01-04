@@ -3,7 +3,7 @@
 state: present
 firefox_source: default
 firefox_flatpak_extensions: true
-user: "vagrant"
+user: "ansible"
 
 firefox_command:
   default:

@@ -4,7 +4,7 @@
   become: true
   become_user: "{{ user }}"
   ansible.builtin.stat:
-    path: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}"
+    path: "{{ firefox_config_path[firefox_source][ansible_facts.os_family] }}/{{ firefox_profile_name }}"
   register: profile_dir_stat
 
 - name: Test that the profile directory exists
@@ -12,7 +12,7 @@
     that:
       - profile_dir_stat.stat.exists
       - profile_dir_stat.stat.isdir
-    fail_msg: "The firefox profile directory was not found at '{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}'."
+    fail_msg: "The firefox profile directory was not found at '{{ firefox_config_path[firefox_source][ansible_facts.os_family] }}/{{ firefox_profile_name }}'."
     quiet: true
 
 - name: Start Firefox to trigger full extension manager load
@@ -20,7 +20,7 @@
   become_user: "{{ user }}"
   ansible.builtin.command:
     cmd: >
-      timeout 5 {{ firefox_command[firefox_source][ansible_os_family] }}
+      timeout 5 {{ firefox_command[firefox_source][ansible_facts.os_family] }}
       --headless -no-remote -new-instance https://example.com
   args:
     creates: "{{ firefox_config_path[firefox_source] }}"
@@ -42,11 +42,11 @@
 - name: Get firefox settings
   become: true
   become_user: "{{ user }}"
-  loop: "{{ firefox_user_config[firefox_major_version.stdout].keys() | default(firefox_user_config[firefox_user_config_fallback_version].keys()) }}"
+  loop: "{{ firefox_user_config.get(firefox_major_version.stdout, firefox_user_config[firefox_user_config_fallback_version]).keys() }}"
   loop_control:
     loop_var: pref_key
   ansible.builtin.command:
-    cmd: "grep '^user_pref(\"{{ pref_key }}\",' {{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/prefs.js"
+    cmd: "grep '^user_pref(\"{{ pref_key }}\",' {{ firefox_config_path[firefox_source][ansible_facts.os_family] }}/{{ firefox_profile_name }}/prefs.js"
   register: prefs_list
   changed_when: false
   failed_when: prefs_list.rc != 0
@@ -56,7 +56,7 @@
   loop_control:
     label: "{{ item.pref_key }}"
   ansible.builtin.set_fact:
-    fetched_prefs: "{{ fetched_prefs | default({}) | combine({ item.pref_key: (item.stdout | regex_search(',\\s*(.+)\\);', '\\1') | first | from_json) }) }}"
+    fetched_prefs: "{{ fetched_prefs | default({}) | combine({item.pref_key: (item.stdout | regex_search(',\\s*(.+)\\);', '\\1') | first | from_json)}) }}"
 
 - name: Test firefox settings
   loop: "{{ fetched_prefs.keys() }}"
@@ -64,9 +64,9 @@
     loop_var: key
   ansible.builtin.assert:
     that:
-      - firefox_user_config[firefox_major_version.stdout][key] == fetched_prefs[key]
+      - firefox_user_config.get(firefox_major_version.stdout, firefox_user_config[firefox_user_config_fallback_version])[key] == fetched_prefs[key]
     fail_msg: |
-      "Expected value '{{ firefox_user_config[firefox_major_version.stdout][key] }}'
+      "Expected value '{{ firefox_user_config.get(firefox_major_version.stdout, firefox_user_config[firefox_user_config_fallback_version])[key] }}'
       but got '{{ fetched_prefs[key] }}' instead for key '{{ key }}'."
     quiet: true
 
@@ -75,7 +75,7 @@
   block:
     - name: Read installed extensions
       ansible.builtin.slurp:
-        src: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/extensions.json"
+        src: "{{ firefox_config_path[firefox_source][ansible_facts.os_family] }}/{{ firefox_profile_name }}/extensions.json"
       register: extensions_json_raw
 
     - name: Parse extensions.json
@@ -93,7 +93,7 @@
       become: true
       become_user: "{{ user }}"
       ansible.builtin.command:
-        cmd: "grep 'user_pref(\"extensions.webextensions.uuids\",' {{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/prefs.js"
+        cmd: "grep 'user_pref(\"extensions.webextensions.uuids\",' {{ firefox_config_path[firefox_source][ansible_facts.os_family] }}/{{ firefox_profile_name }}/prefs.js"
       register: extension_dict
       changed_when: false
       failed_when: extension_dict.rc != 0

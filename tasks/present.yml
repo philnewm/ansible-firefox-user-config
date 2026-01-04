@@ -29,7 +29,7 @@
   become_user: "{{ user }}"
   ansible.builtin.template:
     src: "user.js.j2"
-    dest: "{{ firefox_config_path[firefox_source][ansible_os_family] }}/{{ firefox_profile_name }}/user.js"
+    dest: "{{ firefox_config_path[firefox_source][ansible_facts.os_family] }}/{{ firefox_profile_name }}/user.js"
     mode: "0644"
 
 - name: Set per user extensions for flatpak install
