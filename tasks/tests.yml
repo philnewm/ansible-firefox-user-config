@@ -1,5 +1,22 @@
 ---
 
+- name: Get Firefox major version
+  become: true
+  become_user: "{{ user }}"
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      firefox --version | grep -oP '\d+' | head -1
+  args:
+    executable: /bin/bash
+  register: firefox_major_version
+  changed_when: false
+
+- name: Overwrite config user path for firefox >= 147
+  when: firefox_major_version.stdout | int >= 147
+  ansible.builtin.set_fact:
+    mozilla_user_dir: "/home/{{ user }}/.config/mozilla"
+
 - name: Stat profile directory
   become: true
   become_user: "{{ user }}"
@@ -15,6 +32,7 @@
     fail_msg: "The firefox profile directory was not found at '{{ firefox_config_path[firefox_source][ansible_facts.os_family] }}/{{ firefox_profile_name }}'."
     quiet: true
 
+# Note fixed execution in github hosted runners (ubuntu24.04)
 - name: Ensure `dbus-launch` command is available
   become: true
   ansible.builtin.package:

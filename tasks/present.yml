@@ -8,10 +8,6 @@
 - name: Gather package facts
   ansible.builtin.package_facts:
 
-- name: Add firefox default profile
-  ansible.builtin.include_tasks:
-    file: profile.yml
-
 - name: Get Firefox major version
   become: true
   become_user: "{{ user }}"
@@ -23,6 +19,10 @@
     executable: /bin/bash
   register: firefox_major_version
   changed_when: false
+
+- name: Add firefox default profile
+  ansible.builtin.include_tasks:
+    file: profile.yml
 
 - name: Template user.js to host
   become: true

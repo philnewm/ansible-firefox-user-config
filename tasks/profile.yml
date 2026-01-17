@@ -1,5 +1,11 @@
 ---
 
+# https://www.phoronix.com/news/Firefox-147-XDG-Base-Directory
+- name: Overwrite config user path for firefox >= 147
+  when: firefox_major_version.stdout | int >= 147
+  ansible.builtin.set_fact:
+    mozilla_user_dir: "/home/{{ user }}/.config/mozilla"
+
 - name: Ensure Firefox runs once to create installs.ini
   become: true
   become_user: "{{ user }}"
